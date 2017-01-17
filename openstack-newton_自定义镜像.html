@@ -1,0 +1,329 @@
+<!doctype html>
+<html>
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=yes">
+<style>
+h1,
+h2,
+h3,
+h4,
+h5,
+h6,
+p,
+blockquote {
+    margin: 0;
+    padding: 0;
+}
+body {
+    font-family: "Helvetica Neue", Helvetica, "Hiragino Sans GB", Arial, sans-serif;
+    font-size: 13px;
+    line-height: 18px;
+    color: #737373;
+    background-color: white;
+    margin: 10px 13px 10px 13px;
+}
+table {
+	margin: 10px 0 15px 0;
+	border-collapse: collapse;
+}
+td,th {	
+	border: 1px solid #ddd;
+	padding: 3px 10px;
+}
+th {
+	padding: 5px 10px;	
+}
+
+a {
+    color: #0069d6;
+}
+a:hover {
+    color: #0050a3;
+    text-decoration: none;
+}
+a img {
+    border: none;
+}
+p {
+    margin-bottom: 9px;
+}
+h1,
+h2,
+h3,
+h4,
+h5,
+h6 {
+    color: #404040;
+    line-height: 36px;
+}
+h1 {
+    margin-bottom: 18px;
+    font-size: 30px;
+}
+h2 {
+    font-size: 24px;
+}
+h3 {
+    font-size: 18px;
+}
+h4 {
+    font-size: 16px;
+}
+h5 {
+    font-size: 14px;
+}
+h6 {
+    font-size: 13px;
+}
+hr {
+    margin: 0 0 19px;
+    border: 0;
+    border-bottom: 1px solid #ccc;
+}
+blockquote {
+    padding: 13px 13px 21px 15px;
+    margin-bottom: 18px;
+    font-family:georgia,serif;
+    font-style: italic;
+}
+blockquote:before {
+    content:"\201C";
+    font-size:40px;
+    margin-left:-10px;
+    font-family:georgia,serif;
+    color:#eee;
+}
+blockquote p {
+    font-size: 14px;
+    font-weight: 300;
+    line-height: 18px;
+    margin-bottom: 0;
+    font-style: italic;
+}
+code, pre {
+    font-family: Monaco, Andale Mono, Courier New, monospace;
+}
+code {
+    background-color: #fee9cc;
+    color: rgba(0, 0, 0, 0.75);
+    padding: 1px 3px;
+    font-size: 12px;
+    -webkit-border-radius: 3px;
+    -moz-border-radius: 3px;
+    border-radius: 3px;
+}
+pre {
+    display: block;
+    padding: 14px;
+    margin: 0 0 18px;
+    line-height: 16px;
+    font-size: 11px;
+    border: 1px solid #d9d9d9;
+    white-space: pre-wrap;
+    word-wrap: break-word;
+}
+pre code {
+    background-color: #fff;
+    color:#737373;
+    font-size: 11px;
+    padding: 0;
+}
+sup {
+    font-size: 0.83em;
+    vertical-align: super;
+    line-height: 0;
+}
+* {
+	-webkit-print-color-adjust: exact;
+}
+@media screen and (min-width: 914px) {
+    body {
+        width: 854px;
+        margin:10px auto;
+    }
+}
+@media print {
+	body,code,pre code,h1,h2,h3,h4,h5,h6 {
+		color: black;
+	}
+	table, pre {
+		page-break-inside: avoid;
+	}
+}
+</style>
+<title>OpenStack-Newton 自定义镜像</title>
+
+</head>
+<body>
+<h3>OpenStack-Newton 自定义镜像</h3>
+
+<p>官方提供的操作中帮我们指定了一个小镜像，在实际的生产环境中，我们可以自定义所需要的镜像，可以是Windows,Linux和其他常见的操作系统，我们可以对镜像初始的软件环境进行自定义，创建各种不同应用场景的镜像模板。
+可参考官方文档： http://docs.openstack.org/image-guide/centos-image.html</p>
+
+<h4>手动创建CentOS虚拟机</h4>
+
+<ol>
+<li><p>在计算节点上已经安装了我们需要的虚拟机环境（qemu-kvm, libvirt,virt-install）等工具，如果不是利用计算节点来自定义镜像，可以安装以下工具：</p>
+
+<pre><code>yum install -y qemu-kvm  libvirt virt-install
+</code></pre></li>
+<li><p>启动libvirt:</p>
+
+<pre><code>systemctl  start libvirtd
+</code></pre></li>
+<li><p>创建虚拟机硬盘,可以根据需求设置大小：</p>
+
+<pre><code>qemu-img  create -f qcow2 /tmp/centos.qcow2 6G
+</code></pre></li>
+<li><p>上传一个CentOS的镜像到 tmp目录，创建虚拟机：</p>
+
+<pre><code>virt-install  --virt-type kvm --name centos --ram 1024 \
+--disk /tmp/centos.qcow2,format=qcow2 --network network=default \
+--graphics vnc,listen=0.0.0.0 --noautoconsole  --os-type=linux \
+--os-variant=rhel7 --location=/tmp/CentOS-7-x86_64-Minimal-1511.iso
+</code></pre>
+
+<ul>
+<li><p>如果使用的是桥接网卡，可以使用：</p>
+
+<pre><code>virt-install  --virt-type kvm --name centos --ram 1024 \
+--disk /tmp/centos.qcow2,format=qcow2 --network bridge=brqba798366-8f \
+--graphics vnc,listen=0.0.0.0 --noautoconsole  --os-type=linux \
+--os-variant=rhel7 --location=/tmp/CentOS-7-x86_64-Minimal-1511.iso
+</code></pre></li>
+</ul>
+</li>
+<li>执行此命令之后可以使用VNC客户端连接到主机上，进行图形化界面的安装操作，在自定义的镜像中，默认使用一个 / 根分区即可。对于分区的格式，默认是lvm,如果后期需要对系统进行容量扩展可以采取这种格式，也可以使用其他标准格式。</li>
+<li><p>启动虚拟机,使用vnc再次连接：</p>
+
+<pre><code># virsh  list --all
+Id    Name                           State
+
+     centos                         shut off
+
+# virsh start centos
+</code></pre></li>
+<li><p>配置初始化环境，网络、主机名，yum源，软件包等，这样一个虚拟机的镜像模板就做好了。</p></li>
+</ol>
+
+
+<h4>编写配置脚本启动初始化</h4>
+
+<p>在虚拟机启动时，需要使用metadata去做一些初始化的工作，如获取控制节点的ssh public key，修改主机名，初始化网络设置为静态IP地址等。
+实现此功能由两种方式：</p>
+
+<ul>
+<li>使用cloud-init获取public key。</li>
+<li>在镜像中自定义脚本，通过脚本获取public key 并初始化配置。</li>
+</ul>
+
+
+<p>这里使用脚本来完成初始化配置。</p>
+
+<ol>
+<li><p>修改官方提供的获取public key 脚本：</p>
+
+<pre><code>#!/bin/bash
+
+set_key(){
+ if [ ! -d /root/.ssh ]; then
+     mkdir -p /root/.ssh
+     chmod 700 /root/.ssh
+ fi
+ for ((i=1;i&lt;=5;i++));do
+     if [ ! -f /root/.ssh/authorized_keys ];then
+     curl -f http://169.254.169.254/latest/meta-data/public-keys/0/openssh-key &gt; /tmp/metadata-key 2&gt;/dev/null
+     if [ $? -eq 0 ];then
+         cat /tmp/metadata-key &gt;&gt; /root/.ssh/authorized_keys
+         chmod 0600 /root/.ssh/authorized_keys
+         restorecon /root/.ssh/authorized_keys
+         rm -f /tmp/metadata-key
+         echo "Successfully retrieved public key from instance metadata"
+         echo "*****************"
+         echo "AUTHORIZED KEYS"
+         echo "*****************"
+         cat /root/.ssh/authorized_keys
+         echo "*****************"
+     fi
+     fi
+ done
+ }
+
+ set_hostname(){
+     PRE_HOSTNAME=$(curl -s http://169.254.169.254/latest/meta-data/hostname)
+     DOMAIN_NAME=$(echo $PRE_HOSTNAME | awk -F '.' '{print $1}')
+     hostnamectl set-hostname `echo ${DOMAIN_NAME}.example.com`
+ }
+
+ set_static_ip(){
+     PRE_IP=$(curl -s http://169.254.169.254/latest/meta-data/local-ipv4)
+     NET_FILE="/etc/sysconfig/network-scripts/ifcfg-eth0"
+ echo  "TYPE=Ethernet" &gt; $NET_FILE
+ echo  "BOOTPROTO=static" &gt;&gt; $NET_FILE
+ echo  "NAME=eth0" &gt;&gt; $NET_FILE
+ echo  "DEVICE=eth0" &gt;&gt; $NET_FILE
+ echo  "ONBOOT=yes" &gt;&gt; $NET_FILE
+ echo  "IPADDR=${PRE_IP}" &gt;&gt; $NET_FILE
+ echo  "NETMASK=255.255.255.0" &gt;&gt; $NET_FILE
+ echo  "GATEWAY=10.0.0.1" &gt;&gt; $NET_FILE
+ }
+
+ main(){
+     set_key;
+     set_hostname;
+     set_static_ip;
+     /bin/cp /tmp/rc.local /etc/rc.d/rc.local
+     rm -f /tmp/rc.local
+     reboot
+ }
+
+ main
+</code></pre></li>
+<li><p>此脚本定义了修改的主机名和IP，需要将此脚本放在镜像中，并在镜像rc.local添加脚本自启动：</p>
+
+<pre><code>echo "/bin/bash /tmp/init.sh" &gt;&gt; /etc/rc.local
+cp /etc/rc.d/rc.local /tmp/
+</code></pre>
+
+<blockquote><p>提示：<code>/etc/rc.local</code>是一个软链接，所指向的文件<code>/etc/rc.d/rc.local</code>默认没有执行权限，此处需要添加执行权限才可生效。</p></blockquote>
+
+<pre><code># ls -l /etc/rc.local 
+lrwxrwxrwx. 1 root root 13 Jan 17 03:40 /etc/rc.local -&gt; rc.d/rc.local
+# ls -l /etc/rc.d/rc.local 
+-rw-r--r--. 1 root root 473 Nov 19  2015 /etc/rc.d/rc.local
+# chmod  +x /etc/rc.d/rc.local 
+</code></pre></li>
+<li><p>关闭镜像系统，将镜像文件<code>centos.qcow2</code>上传到控制节点tmp目录，并添加此镜像（与添加cirros镜像命令相同）：</p>
+
+<pre><code>[root@node1 ~]# source admin-openstack 
+[root@node1 ~]# openstack image create "CentOS-7.2-x86_64" \
+--file /tmp/centos.qcow2 --disk-format qcow2 --container-format bare --public
++------------------+------------------------------------------------------+
+| Field            | Value                                                |
++------------------+------------------------------------------------------+
+| checksum         | db1c5f36acd332fe84c58febbb820365                     |
+| container_format | bare                                                 |
+| created_at       | 2017-01-17T11:23:46Z                                 |
+| disk_format      | qcow2                                                |
+| file             | /v2/images/aeb8ffc3-dce6-4e5a-ab9a-bf67a87b9cc2/file |
+| id               | aeb8ffc3-dce6-4e5a-ab9a-bf67a87b9cc2                 |
+| min_disk         | 0                                                    |
+| min_ram          | 0                                                    |
+| name             | CentOS-7.2-x86_64                                    |
+| owner            | c34d22ac34cb4c62a025295cd3d6540c                     |
+| protected        | False                                                |
+| schema           | /v2/schemas/image                                    |
+| size             | 1092485120                                           |
+| status           | active                                               |
+| tags             |                                                      |
+| updated_at       | 2017-01-17T11:24:34Z                                 |
+| virtual_size     | None                                                 |
+| visibility       | public                                               |
++------------------+------------------------------------------------------+
+</code></pre></li>
+<li><p>使用admin 登录Horizon,创建一个能运行此镜像的主机类型，然后回到demo用户，创建<code>CentOS-7.2-x86_64</code>类型的云主机。</p></li>
+</ol>
+
+</body>
+</html>
