@@ -2359,7 +2359,7 @@ Repeat User Password:
 * 使用demo登录Horizon,在管理界面添加卷，连接卷到虚拟机,登录虚拟机，格式化新连接的磁盘vdb。
   
   ```
-  sudo mkfs.ext4 /dev/vdb
+  sudo mkfs.xfs /dev/vdb
   sudo mount /dev/vdb /tmp
   sudo echo "this file on vdb" >> /tmp/test.txt
   sudo umount /tmp
