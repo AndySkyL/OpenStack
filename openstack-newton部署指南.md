@@ -2344,7 +2344,7 @@ Repeat User Password:
   ```
   
 * 验证操作
-  在控制节点查看服务组件是否运行正常
+  在控制节点查看服务组件是否运行正常,ISCSI默认会开启3260端口.
   
   ```
   [root@node1 ~]# source  admin-openstack 
